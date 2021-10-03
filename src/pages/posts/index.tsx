@@ -1,41 +1,46 @@
 import { GetStaticProps } from 'next';
-import Head  from 'next/head';
-import { getPrismicClient } from '../../services/prismic';
-import styles from './styles.module.scss';
-
+import Head from 'next/head';
+import Link from 'next/link';
 import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
 
-export default function Posts() {
+import { getPrismicClient } from '../../services/prismic';
+
+import styles from './styles.module.scss';
+
+interface Post {
+  slug: string;
+  title: string;
+  excerpt: string;
+  updatedAt: string;
+}
+interface PostsProps {
+  posts: Post[];
+}
+
+export default function Posts({ posts }: PostsProps) {
   return (
     <>
-    <Head>
-      <title>Posts | ig.news</title>
-    </Head>
+      <Head>
+        <title>Posts | ig.news</title>
+      </Head>
 
-    <main className={styles.container}>
-      <div className={styles.posts}>
-          <div>
-            <a>
-              <span>
-                <time>Nov 3, 2020 </time>
-                <strong>5 Reasons to Use TypeScript with React</strong>
-                <p>Over the past few years, TypeScript has gain immense popularity among frontend developers. Improved maintainability, code consistency, and future browser support are few reasons behind its success. Though many other frameworks and libraries adopt TypeScript by default, React remained neutral, giving the developers the option to choose between TypeScript and JavaScript. </p>
-              </span>
-            </a>
-          </div>
-          <div>
-            <a>
-              <span>
-                <time>Nov 3, 2020 </time>
-                <strong>5 Reasons to Use TypeScript with React</strong>
-                <p>Over the past few years, TypeScript has gain immense popularity among frontend developers. Improved maintainability, code consistency, and future browser support are few reasons behind its success. Though many other frameworks and libraries adopt TypeScript by default, React remained neutral, giving the developers the option to choose between TypeScript and JavaScript. </p>
-              </span>
-            </a>
-          </div>
-      </div>
-    </main>
-  </>
+      <main className={styles.container}>
+        <div className={styles.posts}>
+          { posts.map(post => (
+            <div key={post.slug}>
+              <Link href={`/posts/preview/${post.slug}`}>
+                <span>
+                  <time>{post.updatedAt}</time>
+                  <strong>{post.title}</strong>
+                  <p>{post.excerpt}</p>
+                </span>
+              </Link>
+            </div>
+          )) }
+        </div>
+      </main>
+    </>
   )
 }
 
@@ -49,11 +54,26 @@ export const getStaticProps: GetStaticProps = async () => {
     pageSize: 100,
   });
 
-  console.log(response);
-  
+  console.log(JSON.stringify(response, null, 2));
+
+  const posts = response.results.map(post => {
+    return {
+      slug: post.uid,
+      title: RichText.asText(post.data.title),
+      excerpt: post.data.content
+        .find(content => content.type === 'paragraph')?.text ?? '',
+      updatedAt: new Date(post.last_publication_date).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      })
+    }
+  });
+
+
   return {
     props: {
-      // posts
+      posts
     }
   }
 }
