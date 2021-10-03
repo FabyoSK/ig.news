@@ -1,19 +1,25 @@
 import { SingInButton } from '../SingInButton';
 import styles from './styles.module.scss';
+import { ActiveLink } from '../ActiveLink';
 
 export function Header() {
-  return (
+  return(
     <header className={styles.headerContainer}>
       <div className={styles.headerContent}>
-        <img src="/images/logo.svg" alt="ig.news"/>
+        <img src="/images/logo.svg" alt="Logo do ig.news"/>
 
         <nav>
-          <a className={styles.active}>Home</a>
-          <a>Posts</a>
-        </nav>
+          <ActiveLink href="/" activeClassName={styles.active}>
+            <a>Home</a>
+          </ActiveLink>
 
+          <ActiveLink href="/posts" activeClassName={styles.active}>
+            <a>Posts</a>
+          </ActiveLink>
+        </nav>
+        
         <SingInButton />
       </div>
     </header>
-  )
+  );
 }
